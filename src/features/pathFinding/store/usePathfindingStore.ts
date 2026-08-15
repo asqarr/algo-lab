@@ -1,5 +1,7 @@
 import { create } from "zustand";
 import type { NodeData } from "../types/node";
+import { dijkstra } from "../utils/dijkstra";
+import { aStar } from "../utils/aStar";
 
 let ROWS = 13;
 let COLS = 37;
@@ -31,24 +33,11 @@ const createInitialGrid = (): NodeData[][] => {
   return grid;
 };
 
-const getNeighbors = (grid: NodeData[][], row: number, col: number) => {
-  const neighbors = [];
-  if (row > 0) neighbors.push(grid[row - 1][col]);
-  if (row < ROWS - 1) neighbors.push(grid[row + 1][col]);
-  if (col > 0) neighbors.push(grid[row][col - 1]);
-  if (col < COLS - 1) neighbors.push(grid[row][col + 1]);
-  return neighbors.filter((n) => !n.isVisited && !n.isWall);
-};
-
-const getNodesInShortestPathOrder = (finishNode: NodeData) => {
-  const nodesInShortestPathOrder: NodeData[] = [];
-  let currentNode: NodeData | null = finishNode;
-  while (currentNode !== null) {
-    nodesInShortestPathOrder.unshift(currentNode);
-    currentNode = currentNode.previousNode;
-  }
-  return nodesInShortestPathOrder;
-};
+interface BenchmarkResultData {
+  time: string;
+  visitedCount: number;
+  pathLength: number;
+}
 
 interface PathfindingState {
   grid: NodeData[][];
@@ -58,16 +47,38 @@ interface PathfindingState {
   executionTime: string;
   hasRun: boolean;
   isDialogOpen: boolean;
-  dialogType: 'success' | 'noPath' | 'noWalls' | null;
+  dialogType: "success" | "noPath" | "noWalls" | null;
+  benchmarkResults: {
+    dijkstra: BenchmarkResultData | null;
+    aStar: BenchmarkResultData | null;
+  };
   setMouseIsPressed: (pressed: boolean) => void;
   toggleWall: (row: number, col: number) => void;
+  runAlgorithm: (algorithm: 'dijkstra' | 'aStar') => Promise<void>;
   runDijkstra: () => Promise<void>;
+  runAStar: () => Promise<void>;
+  runBenchmark: () => void;
   resetGrid: () => void;
   clearWalls: () => void;
-  setIsDialogOpen: (isOpen: boolean, type?: 'success' | 'noPath' | 'noWalls' | null) => void;
+  randomizeWalls: () => void;
+  setIsDialogOpen: (
+    isOpen: boolean,
+    type?: "success" | "noPath" | "noWalls" | null,
+  ) => void;
 }
 
 export const usePathfindingStore = create<PathfindingState>((set, get) => ({
+  randomizeWalls: () => {
+  const newGrid = get().grid.map((row) =>
+    row.map((node) => {
+      if (node.isStart || node.isFinish) return node;
+      
+      const isWall = Math.random() < 0.25; 
+      return { ...node, isWall, isVisited: false, isShortestPath: false };
+    })
+  );
+  set({ grid: newGrid, hasRun: false });
+},
   grid: createInitialGrid(),
   mouseIsPressed: false,
   visitedNodesCount: 0,
@@ -76,9 +87,11 @@ export const usePathfindingStore = create<PathfindingState>((set, get) => ({
   hasRun: false,
   isDialogOpen: false,
   dialogType: null,
+  benchmarkResults: { dijkstra: null, aStar: null },
 
   setMouseIsPressed: (pressed) => set({ mouseIsPressed: pressed }),
-  setIsDialogOpen: (isOpen, type = null) => set({ isDialogOpen: isOpen, dialogType: type }),
+  setIsDialogOpen: (isOpen, type = null) =>
+    set({ isDialogOpen: isOpen, dialogType: type }),
 
   toggleWall: (row, col) => {
     const newGrid = get().grid.map((r) =>
@@ -97,63 +110,48 @@ export const usePathfindingStore = create<PathfindingState>((set, get) => ({
     set({ grid: newGrid });
   },
 
-  runDijkstra: async () => {
+  runAlgorithm: async (algorithm) => {
     const grid = get().grid;
-    
     const hasWalls = grid.some((row) => row.some((node) => node.isWall));
 
     if (!hasWalls) {
-      set({ isDialogOpen: true, dialogType: 'noWalls' });
+      set({ isDialogOpen: true, dialogType: "noWalls" });
       return;
     }
 
     const startTime = performance.now();
+
+    let startCoords = { row: 0, col: 0 };
+    let finishCoords = { row: 0, col: 0 };
+
+    grid.forEach((row, rIdx) => {
+      row.forEach((node, cIdx) => {
+        if (node.isStart) startCoords = { row: rIdx, col: cIdx };
+        if (node.isFinish) finishCoords = { row: rIdx, col: cIdx };
+      });
+    });
+
+    const algorithmFn = algorithm === 'dijkstra' ? dijkstra : aStar;
+    const { visitedNodesInOrder, nodesInShortestPath, pathFound } = algorithmFn(
+      grid,
+      startCoords,
+      finishCoords,
+    );
     const gridCopy = grid.map((row) => row.map((node) => ({ ...node })));
-    const startNode = gridCopy.flat().find((n) => n.isStart)!;
-    const finishNode = gridCopy.flat().find((n) => n.isFinish)!;
 
-    startNode.distance = 0;
-    const unvisitedNodes = gridCopy.flat();
-    const visitedNodesInOrder: NodeData[] = [];
-    let pathFound = false;
-
-    while (unvisitedNodes.length > 0) {
-      unvisitedNodes.sort((a, b) => a.distance - b.distance);
-      const closestNode = unvisitedNodes.shift()!;
-
-      if (closestNode.isWall) continue;
-      if (closestNode.distance === Infinity) break;
-
-      closestNode.isVisited = true;
-      visitedNodesInOrder.push(closestNode);
-
+    for (let i = 0; i < visitedNodesInOrder.length; i++) {
+      const node = visitedNodesInOrder[i];
+      gridCopy[node.row][node.col].isVisited = true;
       set({
         grid: [...gridCopy],
-        visitedNodesCount: visitedNodesInOrder.length,
+        visitedNodesCount: i + 1,
       });
       await new Promise((resolve) => setTimeout(resolve, 10));
-
-      if (
-        closestNode.row === finishNode.row &&
-        closestNode.col === finishNode.col
-      ) {
-        pathFound = true;
-        break;
-      }
-
-      const neighbors = getNeighbors(gridCopy, closestNode.row, closestNode.col);
-      for (const neighbor of neighbors) {
-        const target = gridCopy[neighbor.row][neighbor.col];
-        target.distance = closestNode.distance + 1;
-        target.previousNode = closestNode;
-      }
     }
 
-    let nodesInShortestPath: NodeData[] = [];
-    if (pathFound) {
-      nodesInShortestPath = getNodesInShortestPathOrder(
-        gridCopy[finishNode.row][finishNode.col],
-      );
+    let finalPathFound = false;
+    if (pathFound && nodesInShortestPath.length > 1) {
+      finalPathFound = true;
       for (const node of nodesInShortestPath) {
         gridCopy[node.row][node.col].isShortestPath = true;
         set({ grid: [...gridCopy] });
@@ -164,26 +162,74 @@ export const usePathfindingStore = create<PathfindingState>((set, get) => ({
     const endTime = performance.now();
     const totalTime = ((endTime - startTime) / 1000).toFixed(3) + "s";
 
-    const finalPathFound = pathFound && nodesInShortestPath.length > 1;
-
     set({
       grid: [...gridCopy],
       pathLength: finalPathFound ? nodesInShortestPath.length - 1 : 0,
       executionTime: totalTime,
       hasRun: true,
       isDialogOpen: true,
-      dialogType: finalPathFound ? 'success' : 'noPath',
+      dialogType: finalPathFound ? "success" : "noPath",
     });
 
-    // اگر مسیر با موفقیت پیدا شد، بعد از ۲ ثانیه دیالوگ خودکار بسته شود
     if (finalPathFound) {
       setTimeout(() => {
         const currentState = get();
-        if (currentState.dialogType === 'success') {
+        if (currentState.dialogType === "success") {
           set({ isDialogOpen: false, dialogType: null });
         }
       }, 2000);
     }
+  },
+
+  runDijkstra: async () => {
+    await get().runAlgorithm('dijkstra');
+  },
+
+  runAStar: async () => {
+    await get().runAlgorithm('aStar');
+  },
+
+  runBenchmark: () => {
+    const grid = get().grid;
+    const hasWalls = grid.some((row) => row.some((node) => node.isWall));
+
+    if (!hasWalls) {
+      set({ isDialogOpen: true, dialogType: "noWalls" });
+      return;
+    }
+
+    let startCoords = { row: 0, col: 0 };
+    let finishCoords = { row: 0, col: 0 };
+
+    grid.forEach((row, rIdx) => {
+      row.forEach((node, cIdx) => {
+        if (node.isStart) startCoords = { row: rIdx, col: cIdx };
+        if (node.isFinish) finishCoords = { row: rIdx, col: cIdx };
+      });
+    });
+
+    const t1Start = performance.now();
+    const dRes = dijkstra(grid, startCoords, finishCoords);
+    const t1End = performance.now();
+
+    const t2Start = performance.now();
+    const aRes = aStar(grid, startCoords, finishCoords);
+    const t2End = performance.now();
+
+    set({
+      benchmarkResults: {
+        dijkstra: {
+          time: (t1End - t1Start).toFixed(2) + " ms",
+          visitedCount: dRes.visitedNodesInOrder.length,
+          pathLength: dRes.pathFound ? dRes.nodesInShortestPath.length - 1 : 0,
+        },
+        aStar: {
+          time: (t2End - t2Start).toFixed(2) + " ms",
+          visitedCount: aRes.visitedNodesInOrder.length,
+          pathLength: aRes.pathFound ? aRes.nodesInShortestPath.length - 1: 0,
+        },
+      },
+    });
   },
 
   resetGrid: () =>
@@ -195,6 +241,7 @@ export const usePathfindingStore = create<PathfindingState>((set, get) => ({
       hasRun: false,
       isDialogOpen: false,
       dialogType: null,
+      benchmarkResults: { dijkstra: null, aStar: null },
     }),
 
   clearWalls: () => {
@@ -216,6 +263,7 @@ export const usePathfindingStore = create<PathfindingState>((set, get) => ({
       hasRun: false,
       isDialogOpen: false,
       dialogType: null,
+      benchmarkResults: { dijkstra: null, aStar: null },
     });
   },
 }));
