@@ -7,7 +7,7 @@ import { PathStats } from "./features/pathFinding/components/PathStats";
 import { FooterGuide } from "./features/pathFinding/components/FooterGuide";
 import { AlgorithmDocsModal } from "./features/pathFinding/components/AlgorithmDocsModal";
 import { usePathfindingStore } from "./features/pathFinding/store/usePathfindingStore";
-import { handleSaveBoard } from "./features/pathFinding/utils/saveUtils";
+import { handleSaveBoard } from "./features/pathFinding/utils/saveUtils"; // ایمپورت مستقیم تابع ذخیره
 import { PathDialog } from "./features/pathFinding/components/PathDialog";
 
 function App() {

@@ -12,7 +12,7 @@ const getNeighbors = (grid: NodeData[][], row: number, col: number, rows: number
   if (row < rows - 1) neighbors.push(grid[row + 1][col]);
   if (col > 0) neighbors.push(grid[row][col - 1]);
   if (col < cols - 1) neighbors.push(grid[row][col + 1]);
-  return neighbors.filter((n) => !n.isVisited && !n.isWall);
+  return neighbors.filter((n) => !n.isWall);
 };
 
 const heuristic = (node: NodeData, finishNode: NodeData): number => {
@@ -37,7 +37,7 @@ export const aStar = (
   const rows = grid.length;
   const cols = grid[0].length;
   
-  const gridCopy: NodeData[][] = grid.map((row) => row.map((node) => ({ ...node, distance: Infinity })) );
+  const gridCopy: NodeData[][] = grid.map((row) => row.map((node) => ({ ...node, distance: Infinity, previousNode: null, isVisited: false })) );
   const startNode = gridCopy[startNodeCoords.row][startNodeCoords.col];
   const finishNode = gridCopy[finishNodeCoords.row][finishNodeCoords.col];
 
@@ -80,7 +80,7 @@ export const aStar = (
     const neighbors = getNeighbors(gridCopy, currentNode.row, currentNode.col, rows, cols);
     for (const neighbor of neighbors) {
       const target = gridCopy[neighbor.row][neighbor.col];
-      const tentativeGScore = gScores[getKey(currentNode.row, currentNode.col)] + 1;
+      const tentativeGScore = gScores[getKey(currentNode.row, currentNode.col)] + target.weight;
 
       const neighborKey = getKey(target.row, target.col);
       if (tentativeGScore < (gScores[neighborKey] ?? Infinity)) {

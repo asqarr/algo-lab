@@ -60,8 +60,11 @@ export const dijkstra = (
     const neighbors = getNeighbors(gridCopy, closestNode.row, closestNode.col, rows, cols);
     for (const neighbor of neighbors) {
       const target = gridCopy[neighbor.row][neighbor.col];
-      target.distance = closestNode.distance + 1;
-      target.previousNode = closestNode;
+      const newDistance = closestNode.distance + target.weight;
+      if (newDistance < target.distance) {
+        target.distance = newDistance;
+        target.previousNode = closestNode;
+      }
     }
   }
 
