@@ -60,12 +60,13 @@ export const SaveButton: React.FC = () => {
       </button>
 
       {toast && (
-<div className="absolute top-15 right-0 z-50 flex items-center flex-row-reverse gap-2.5 px-4 py-2.5 bg-slate-900/95 border border-slate-700/80 rounded-2xl shadow-2xl backdrop-blur-2xl animate-in fade-in slide-in-from-top-2 duration-300 whitespace-nowrap">          {toast.type === "success" ? (
+        <div className="absolute top-15 right-0 z-50 flex items-center flex-row-reverse gap-2.5 px-4 py-2.5 bg-slate-900/95 border border-slate-700/80 rounded-2xl shadow-2xl backdrop-blur-2xl animate-in fade-in slide-in-from-top-2 duration-300 whitespace-nowrap">
+          {" "}
+          {toast.type === "success" ? (
             <CheckCircle2 className="w-4 h-4 text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.6)]" />
           ) : (
             <AlertCircle className="w-4 h-4 text-rose-400 drop-shadow-[0_0_8px_rgba(251,113,133,0.6)]" />
           )}
-
           <span
             className={`text-xs font-bold tracking-wide ${
               toast.type === "success" ? "text-emerald-200" : "text-rose-200"
@@ -94,7 +95,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onSave, onOpenDocs }) => {
         </div>
 
         <div>
-          <h1 className="text-lg sm:text-xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-fuchsia-400 to-indigo-400 drop-shadow-[0_0_15px_rgba(168,85,247,0.3)]">
+          <h1 className="text-lg sm:text-xl font-black tracking-wider text-transparent bg-clip-text bg-linear-to-r from-cyan-400 via-fuchsia-400 to-indigo-400 drop-shadow-[0_0_15px_rgba(168,85,247,0.3)]">
             ALGO-VISUALIZER
           </h1>
 

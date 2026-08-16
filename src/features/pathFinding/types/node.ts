@@ -10,4 +10,8 @@ export interface NodeData {
   isWeight: boolean;
   isShortestPath?: boolean;
   previousNode: NodeData | null;
+  dijkstraVisited?: boolean;
+  aStarVisited?: boolean;
+  dijkstraPath?: boolean;
+  aStarPath?: boolean;
 }
