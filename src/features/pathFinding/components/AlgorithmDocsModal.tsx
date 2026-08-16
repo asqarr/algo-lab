@@ -8,6 +8,7 @@ import {
   GitCommit,
   FastForward,
   CheckCircle2,
+  Trophy,
 } from "lucide-react";
 
 interface AlgorithmDocsModalProps {
@@ -20,7 +21,7 @@ export const AlgorithmDocsModal: React.FC<AlgorithmDocsModalProps> = ({
   onClose,
 }) => {
   const [activeTab, setActiveTab] = useState<
-    "dijkstra" | "aStar" | "bidirectional" | "jps"
+    "dijkstra" | "aStar" | "bidirectional" | "jps" | "duel"
   >("dijkstra");
 
   const docsData = {
@@ -84,6 +85,21 @@ export const AlgorithmDocsModal: React.FC<AlgorithmDocsModalProps> = ({
       ],
       timeComplexity: "O(k log n)",
     },
+    duel: {
+      name: "Algorithm Duel Analysis",
+      badge: "Comparative Benchmark",
+      color: "text-indigo-400",
+      bgBadge: "bg-indigo-500/10 border-indigo-500/20 text-indigo-400",
+      icon: <Trophy className="w-5 h-5 text-indigo-400" />,
+      description:
+        "A specialized performance comparison mode pitting Dijkstra against A* Search simultaneously to scientifically evaluate execution time, visited nodes, and path efficiency.",
+      features: [
+        "Real-time side-by-side performance benchmarking",
+        "Visualizes divergence and heuristic efficiency advantages",
+        "Provides an automated scientific conclusion on optimal routing",
+      ],
+      timeComplexity: "Combined O(E) & O(V + E log V)",
+    },
   };
 
   const current = docsData[activeTab];
@@ -96,16 +112,18 @@ export const AlgorithmDocsModal: React.FC<AlgorithmDocsModalProps> = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.15 }}
+            style={{ willChange: "opacity" }}
             className="absolute inset-0 bg-black/80 backdrop-blur-xl"
             onClick={onClose}
           />
 
           <motion.div
-            initial={{ scale: 0.95, opacity: 0, y: 20 }}
+            initial={{ scale: 0.95, opacity: 0, y: 15 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.95, opacity: 0, y: 20 }}
-            transition={{ type: "spring", duration: 0.5, bounce: 0.2 }}
+            exit={{ scale: 0.95, opacity: 0, y: 15 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            style={{ willChange: "transform, opacity" }}
             className="relative w-full max-w-2xl bg-[#0b0f19] border border-slate-800/80 rounded-3xl shadow-2xl p-6 md:p-7 overflow-hidden z-10 text-slate-300"
           >
             <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-96 h-32 bg-indigo-500/10 blur-3xl pointer-events-none rounded-full"></div>
@@ -113,7 +131,7 @@ export const AlgorithmDocsModal: React.FC<AlgorithmDocsModalProps> = ({
             <div className="relative flex justify-between items-center mb-5 border-b border-slate-800/80 pb-4">
               <div className="flex items-center gap-3">
                 <div className="p-2.5 rounded-2xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 shadow-inner">
-                  <BookOpen className="w-5 h-5 animate-pulse" />
+                  <BookOpen className="w-5 h-5" />
                 </div>
                 <div>
                   <h3 className="text-xl font-bold text-white tracking-wide">
@@ -132,7 +150,7 @@ export const AlgorithmDocsModal: React.FC<AlgorithmDocsModalProps> = ({
               </button>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-6">
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mb-6">
               {(Object.keys(docsData) as Array<keyof typeof docsData>).map(
                 (key) => {
                   const item = docsData[key];
@@ -149,7 +167,7 @@ export const AlgorithmDocsModal: React.FC<AlgorithmDocsModalProps> = ({
                     >
                       {item.icon}
                       <span className="truncate">
-                        {item.name.split(" ")[0]}
+                        {key === "duel" ? "Duel" : item.name.split(" ")[0]}
                       </span>
                     </button>
                   );
@@ -204,7 +222,7 @@ export const AlgorithmDocsModal: React.FC<AlgorithmDocsModalProps> = ({
             <div className="flex justify-end">
               <button
                 onClick={onClose}
-                className="w-full sm:w-auto px-7 py-3 font-bold text-white transition-all duration-300 bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 rounded-xl hover:shadow-lg hover:shadow-cyan-500/25 active:scale-95 cursor-pointer border border-white/10"
+                className="w-full sm:w-auto px-7 py-3 font-bold text-white transition-all duration-300 bg-linear-to-r from-blue-600 via-indigo-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 rounded-xl hover:shadow-lg hover:shadow-cyan-500/25 active:scale-95 cursor-pointer border border-white/10"
               >
                 Got it
               </button>

@@ -1,36 +1,62 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import { usePathfindingStore } from "../store/usePathfindingStore";
 import { Node } from "./Node";
 
 export const Grid: React.FC = () => {
   const grid = usePathfindingStore((state) => state.grid);
-  const mouseIsPressed = usePathfindingStore((state) => state.mouseIsPressed);
   const toolMode = usePathfindingStore((state) => state.toolMode);
-  const setMouseIsPressed = usePathfindingStore((state) => state.setMouseIsPressed);
   const toggleWall = usePathfindingStore((state) => state.toggleWall);
   const toggleWeight = usePathfindingStore((state) => state.toggleWeight);
 
-  const handleAction = useCallback((row: number, col: number) => {
-    if (toolMode === "wall") {
-      toggleWall(row, col);
-    } else {
-      toggleWeight(row, col);
-    }
-  }, [toolMode, toggleWall, toggleWeight]);
+  const isMouseDownRef = useRef(false);
+  const targetStateRef = useRef<boolean | null>(null);
 
   const handleMouseDown = useCallback((row: number, col: number) => {
-    handleAction(row, col);
-    setMouseIsPressed(true);
-  }, [handleAction, setMouseIsPressed]);
+    isMouseDownRef.current = true;
+    const node = grid[row]?.[col];
+    if (!node || node.isStart || node.isFinish) return;
+
+    if (toolMode === "wall") {
+      targetStateRef.current = !node.isWall;
+      toggleWall(row, col);
+    } else {
+      targetStateRef.current = !node.isWeight;
+      toggleWeight(row, col);
+    }
+  }, [grid, toolMode, toggleWall, toggleWeight]);
 
   const handleMouseEnter = useCallback((row: number, col: number) => {
-    if (!mouseIsPressed) return;
-    handleAction(row, col);
-  }, [mouseIsPressed, handleAction]);
+    if (!isMouseDownRef.current) return;
+    const node = grid[row]?.[col];
+    if (!node || node.isStart || node.isFinish) return;
+
+    if (toolMode === "wall") {
+      if (node.isWall !== targetStateRef.current) {
+        toggleWall(row, col);
+      }
+    } else {
+      if (node.isWeight !== targetStateRef.current) {
+        toggleWeight(row, col);
+      }
+    }
+  }, [grid, toolMode, toggleWall, toggleWeight]);
 
   const handleMouseUp = useCallback(() => {
-    setMouseIsPressed(false);
-  }, [setMouseIsPressed]);
+    isMouseDownRef.current = false;
+    targetStateRef.current = null;
+  }, []);
+
+  useEffect(() => {
+    const onGlobalMouseUp = () => {
+      isMouseDownRef.current = false;
+      targetStateRef.current = null;
+    };
+
+    window.addEventListener("mouseup", onGlobalMouseUp);
+    return () => {
+      window.removeEventListener("mouseup", onGlobalMouseUp);
+    };
+  }, []);
 
   return (
     <div
