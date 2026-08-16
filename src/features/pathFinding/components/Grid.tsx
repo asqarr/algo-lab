@@ -1,24 +1,36 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { usePathfindingStore } from "../store/usePathfindingStore";
 import { Node } from "./Node";
 
 export const Grid: React.FC = () => {
-  const { grid, mouseIsPressed, setMouseIsPressed, toggleWall } =
-    usePathfindingStore();
+  const grid = usePathfindingStore((state) => state.grid);
+  const mouseIsPressed = usePathfindingStore((state) => state.mouseIsPressed);
+  const toolMode = usePathfindingStore((state) => state.toolMode);
+  const setMouseIsPressed = usePathfindingStore((state) => state.setMouseIsPressed);
+  const toggleWall = usePathfindingStore((state) => state.toggleWall);
+  const toggleWeight = usePathfindingStore((state) => state.toggleWeight);
 
-  const handleMouseDown = (row: number, col: number) => {
-    toggleWall(row, col);
+  const handleAction = useCallback((row: number, col: number) => {
+    if (toolMode === "wall") {
+      toggleWall(row, col);
+    } else {
+      toggleWeight(row, col);
+    }
+  }, [toolMode, toggleWall, toggleWeight]);
+
+  const handleMouseDown = useCallback((row: number, col: number) => {
+    handleAction(row, col);
     setMouseIsPressed(true);
-  };
+  }, [handleAction, setMouseIsPressed]);
 
-  const handleMouseEnter = (row: number, col: number) => {
+  const handleMouseEnter = useCallback((row: number, col: number) => {
     if (!mouseIsPressed) return;
-    toggleWall(row, col);
-  };
+    handleAction(row, col);
+  }, [mouseIsPressed, handleAction]);
 
-  const handleMouseUp = () => {
+  const handleMouseUp = useCallback(() => {
     setMouseIsPressed(false);
-  };
+  }, [setMouseIsPressed]);
 
   return (
     <div
@@ -30,7 +42,7 @@ export const Grid: React.FC = () => {
           <div key={rowIdx} className="flex">
             {row.map((node, nodeIdx) => (
               <Node
-                key={nodeIdx}
+                key={`${rowIdx}-${nodeIdx}`}
                 node={node}
                 onMouseDown={handleMouseDown}
                 onMouseEnter={handleMouseEnter}

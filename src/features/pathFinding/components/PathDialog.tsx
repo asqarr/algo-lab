@@ -1,29 +1,37 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePathfindingStore } from "../store/usePathfindingStore";
-import { AlertCircle, CheckCircle2 } from "lucide-react";
+import { AlertCircle, CheckCircle2, RefreshCw } from "lucide-react";
 
 export const PathDialog: React.FC = () => {
   const { isDialogOpen, dialogType, resetGrid, setIsDialogOpen } =
     usePathfindingStore();
 
   const isSuccess = dialogType === "success";
+  const isAlreadyRun = dialogType === "alreadyRun";
 
   const getDialogContent = () => {
     if (dialogType === "success") {
       return {
         title: "Path Successfully Found!",
         message:
-          "The shortest route has been successfully calculated and displayed.",
-        buttonText: "",
+          "The shortest route has been successfully calculated and displayed with optimal accuracy.",
       };
     }
     if (dialogType === "noWalls") {
       return {
         title: "No Walls Drawn",
         message:
-          "Please draw some walls or obstacles on the grid before running the algorithm!",
+          "Please draw some walls or obstacles on the grid before running the pathfinding algorithm!",
         buttonText: "Got it",
+      };
+    }
+    if (dialogType === "alreadyRun") {
+      return {
+        title: "Board Already Visited",
+        message:
+          "Please reset the board before running a new algorithm to ensure accurate and clean results.",
+        buttonText: "Reset Board",
       };
     }
     return {
@@ -40,7 +48,7 @@ export const PathDialog: React.FC = () => {
     if (dialogType === "noWalls") {
       setIsDialogOpen(false, null);
     } else {
-      resetGrid();
+      resetGrid(); 
     }
   };
 
@@ -52,52 +60,85 @@ export const PathDialog: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-black/60 backdrop-blur-md"
-            onClick={isSuccess ? undefined : handleAction}
+            transition={{ duration: 0.3 }}
+            className="absolute inset-0 bg-[#030712]/80 backdrop-blur-xl"
+            onClick={isSuccess ? () => setIsDialogOpen(false, null) : handleAction}
           />
 
           <motion.div
-            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+            initial={{ scale: 0.85, opacity: 0, y: 25 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.9, opacity: 0, y: 20 }}
-            transition={{ type: "spring", duration: 0.5, bounce: 0.3 }}
-            className="relative w-full max-w-md p-6 overflow-hidden text-center bg-[#0b0f19]/80 border border-slate-700/60 rounded-3xl shadow-2xl shadow-cyan-500/10 backdrop-blur-xl z-10"
+            exit={{ scale: 0.85, opacity: 0, y: 25 }}
+            transition={{ type: "spring", stiffness: 350, damping: 25 }}
+            className={`relative w-full max-w-md p-7 overflow-hidden text-center bg-slate-950/90 border ${
+              isSuccess
+                ? "border-emerald-500/30 shadow-emerald-500/10"
+                : isAlreadyRun
+                ? "border-amber-500/30 shadow-amber-500/10"
+                : "border-rose-500/30 shadow-rose-500/10"
+            } rounded-3xl shadow-2xl backdrop-blur-2xl z-10`}
           >
-            <div
-              className={`flex items-center justify-center w-14 h-14 mx-auto mb-4 rounded-2xl border ${
-                isSuccess
-                  ? "bg-green-500/10 border-green-500/20 text-green-400"
-                  : "bg-red-500/10 border-red-500/20 text-red-400"
-              }`}
-            >
-              {isSuccess ? (
-                <motion.div
-                  initial={{ scale: 0, rotate: -180 }}
-                  animate={{ scale: 1, rotate: 0 }}
-                  transition={{ type: "spring", stiffness: 200, damping: 15 }}
-                  className="flex items-center justify-center"
-                >
-                  <CheckCircle2 className="w-8 h-8" />
-                </motion.div>
-              ) : (
-                <AlertCircle className="w-7 h-7" />
-              )}
+            <div className="relative mx-auto mb-5 w-16 h-16 flex items-center justify-center">
+              <div
+                className={`absolute inset-0 rounded-2xl blur-xl opacity-40 animate-pulse ${
+                  isSuccess
+                    ? "bg-emerald-500"
+                    : isAlreadyRun
+                    ? "bg-amber-500"
+                    : "bg-rose-500"
+                }`}
+              />
+              <div
+                className={`relative flex items-center justify-center w-16 h-16 rounded-2xl border ${
+                  isSuccess
+                    ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+                    : isAlreadyRun
+                    ? "bg-amber-500/10 border-amber-500/30 text-amber-400"
+                    : "bg-rose-500/10 border-rose-500/30 text-rose-400"
+                } shadow-inner`}
+              >
+                {isSuccess ? (
+                  <motion.div
+                    initial={{ scale: 0, rotate: -180 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    transition={{ type: "spring", stiffness: 250, damping: 12, delay: 0.1 }}
+                  >
+                    <CheckCircle2 className="w-9 h-9" />
+                  </motion.div>
+                ) : isAlreadyRun ? (
+                  <RefreshCw className="w-8 h-8 animate-spin" />
+                ) : (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 250, damping: 12, delay: 0.1 }}
+                  >
+                    <AlertCircle className="w-8 h-8" />
+                  </motion.div>
+                )}
+              </div>
             </div>
 
-            <h3 className="text-xl font-bold text-white mb-2">
+            <h3 className="text-xl font-bold text-white mb-2 tracking-wide">
               {content.title}
             </h3>
-            <p className="text-slate-400 text-sm mb-6 leading-relaxed">
+            <p className="text-slate-400 text-sm mb-4 leading-relaxed px-2">
               {content.message}
             </p>
 
             {!isSuccess && (
-              <button
-                onClick={handleAction}
-                className="w-full py-3.5 px-6 font-bold text-white transition-all bg-linear-to-r from-blue-600 via-indigo-600 to-cyan-500 rounded-2xl hover:scale-[1.02] hover:shadow-lg hover:shadow-cyan-500/25 active:scale-[0.98] cursor-pointer"
-              >
-                {content.buttonText}
-              </button>
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={handleAction}
+                  className={`w-full py-3.5 px-6 font-semibold text-white transition-all duration-300 rounded-2xl shadow-lg active:scale-[0.98] cursor-pointer ${
+                    isAlreadyRun
+                      ? "bg-gradient-to-r from-amber-600 via-orange-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 shadow-amber-600/25 border border-amber-400/20"
+                      : "bg-gradient-to-r from-rose-600 via-pink-600 to-indigo-600 hover:from-rose-500 hover:to-indigo-500 shadow-rose-600/25 border border-rose-400/20"
+                  }`}
+                >
+                  {content.buttonText}
+                </button>
+              </div>
             )}
           </motion.div>
         </div>
