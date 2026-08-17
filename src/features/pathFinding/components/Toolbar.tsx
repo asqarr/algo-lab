@@ -72,7 +72,7 @@ export const Toolbar: React.FC = () => {
         <div className="flex flex-wrap items-center gap-2.5">
           <button
             onClick={randomizeWalls}
-            className="flex items-center gap-2 px-5 py-2.5 bg-liner-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white rounded-xl text-sm font-semibold transition-all duration-300 cursor-pointer shadow-lg shadow-indigo-600/25 border border-indigo-400/20"
+            className="flex items-center gap-2 px-5 py-2.5 from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white rounded-xl text-sm font-semibold transition-all duration-300 cursor-pointer shadow-lg shadow-indigo-600/25 border border-indigo-400/20"
             title="Generate Random Walls"
           >
             <Shuffle className="w-4 h-4 text-purple-300 animate-pulse" />
@@ -81,7 +81,7 @@ export const Toolbar: React.FC = () => {
 
           <button
             onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 px-5 py-2.5 bg-liner-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white rounded-xl text-sm font-semibold transition-all duration-300 cursor-pointer shadow-lg shadow-indigo-600/25 border border-indigo-400/20"
+            className="flex items-center gap-2 px-5 py-2.5 from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white rounded-xl text-sm font-semibold transition-all duration-300 cursor-pointer shadow-lg shadow-indigo-600/25 border border-indigo-400/20"
           >
             <Sparkles className="w-4 h-4 text-amber-300 animate-pulse" />
             <span>Select & Run Algorithm</span>

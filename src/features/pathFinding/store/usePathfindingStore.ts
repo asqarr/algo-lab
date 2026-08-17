@@ -41,6 +41,22 @@ const createInitialGrid = (): NodeData[][] => {
   return grid;
 };
 
+const getGridMetrics = (grid: NodeData[][]) => {
+  let startCoords = { row: 0, col: 0 };
+  let finishCoords = { row: 0, col: 0 };
+  let hasObstacles = false;
+
+  grid.forEach((row, rIdx) => {
+    row.forEach((node, cIdx) => {
+      if (node.isWall || node.isWeight) hasObstacles = true;
+      if (node.isStart) startCoords = { row: rIdx, col: cIdx };
+      if (node.isFinish) finishCoords = { row: rIdx, col: cIdx };
+    });
+  });
+
+  return { startCoords, finishCoords, hasObstacles };
+};
+
 interface BenchmarkResultData {
   time: string;
   visitedCount: number;
@@ -102,7 +118,7 @@ export const usePathfindingStore = create<PathfindingState>((set, get) => ({
 
   toggleWall: (row, col) => {
     const grid = get().grid;
-    const node = grid[row] && grid[row][col];
+    const node = grid[row]?.[col];
     if (!node || node.isStart || node.isFinish) return;
 
     const newGrid = grid.map((r, rIdx) => 
@@ -118,7 +134,7 @@ export const usePathfindingStore = create<PathfindingState>((set, get) => ({
 
   toggleWeight: (row, col) => {
     const grid = get().grid;
-    const node = grid[row] && grid[row][col];
+    const node = grid[row]?.[col];
     if (!node || node.isStart || node.isFinish) return;
 
     const newIsWeight = !node.isWeight;
@@ -139,10 +155,9 @@ export const usePathfindingStore = create<PathfindingState>((set, get) => ({
   },
 
   randomizeWalls: () => {
-    const { toolMode } = get();
-    const currentGrid = get().grid;
+    const { toolMode, grid } = get();
     
-    const newGrid = currentGrid.map((row) =>
+    const newGrid = grid.map((row) =>
       row.map((node) => {
         if (node.isStart || node.isFinish) return node;
         const isRandomActive = Math.random() < 0.25;
@@ -174,9 +189,8 @@ export const usePathfindingStore = create<PathfindingState>((set, get) => ({
   },
 
   saveBoard: () => {
-    const { grid } = get();
     try {
-      localStorage.setItem('pathfinder_saved_grid', JSON.stringify(grid));
+      localStorage.setItem('pathfinder_saved_grid', JSON.stringify(get().grid));
     } catch (error) {
       console.error('Failed to save board state:', error);
     }
@@ -187,9 +201,8 @@ export const usePathfindingStore = create<PathfindingState>((set, get) => ({
       const savedData = localStorage.getItem('pathfinder_saved_grid');
       if (!savedData) return false;
 
-      const parsedGrid = JSON.parse(savedData);
       set({
-        grid: parsedGrid,
+        grid: JSON.parse(savedData),
         hasRun: false,
         visitedNodesCount: 0,
         pathLength: 0,
@@ -206,15 +219,12 @@ export const usePathfindingStore = create<PathfindingState>((set, get) => ({
 
   runAlgorithm: async (algorithm) => {
     const state = get();
-    
     if (state.hasRun) {
       set({ isDialogOpen: true, dialogType: "alreadyRun" });
       return;
     }
 
-    const grid = state.grid;
-    const hasObstacles = grid.some((row) => row.some((node) => node.isWall || node.isWeight));
-
+    const { startCoords, finishCoords, hasObstacles } = getGridMetrics(state.grid);
     if (!hasObstacles) {
       set({ isDialogOpen: true, dialogType: "noWalls" });
       return;
@@ -222,32 +232,25 @@ export const usePathfindingStore = create<PathfindingState>((set, get) => ({
 
     const startTime = performance.now();
 
-    let startCoords = { row: 0, col: 0 };
-    let finishCoords = { row: 0, col: 0 };
+    const algorithmMap = {
+      dijkstra,
+      aStar,
+      bidirectional: bidirectionalAStar,
+      jps: jumpPointSearch,
+    };
 
-    grid.forEach((row, rIdx) => {
-      row.forEach((node, cIdx) => {
-        if (node.isStart) startCoords = { row: rIdx, col: cIdx };
-        if (node.isFinish) finishCoords = { row: rIdx, col: cIdx };
-      });
-    });
-
-    let algorithmFn = dijkstra;
-    if (algorithm === 'aStar') algorithmFn = aStar;
-    if (algorithm === 'bidirectional') algorithmFn = bidirectionalAStar;
-    if (algorithm === 'jps') algorithmFn = jumpPointSearch;
-
+    const algorithmFn = algorithmMap[algorithm] || dijkstra;
     const { visitedNodesInOrder, nodesInShortestPath, pathFound } = algorithmFn(
-      grid,
+      state.grid,
       startCoords,
       finishCoords
     );
 
-    const gridCopy = grid.map((row) => row.map((node) => ({ ...node })));
+    const gridCopy = state.grid.map((row) => row.map((node) => ({ ...node })));
 
     for (let i = 0; i < visitedNodesInOrder.length; i++) {
       const node = visitedNodesInOrder[i];
-      if (gridCopy[node.row] && gridCopy[node.row][node.col]) {
+      if (gridCopy[node.row]?.[node.col]) {
         gridCopy[node.row][node.col].isVisited = true;
         
         if (i % 8 === 0 || i === visitedNodesInOrder.length - 1) {
@@ -264,7 +267,7 @@ export const usePathfindingStore = create<PathfindingState>((set, get) => ({
     if (pathFound && nodesInShortestPath.length > 1) {
       finalPathFound = true;
       for (const node of nodesInShortestPath) {
-        if (gridCopy[node.row] && gridCopy[node.row][node.col]) {
+        if (gridCopy[node.row]?.[node.col]) {
           gridCopy[node.row][node.col].isShortestPath = true;
           set({ grid: gridCopy.map(row => [...row]) });
           await new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 5))); 
@@ -286,55 +289,31 @@ export const usePathfindingStore = create<PathfindingState>((set, get) => ({
 
     if (finalPathFound) {
       setTimeout(() => {
-        const currentState = get();
-        if (currentState.dialogType === "success") {
+        if (get().dialogType === "success") {
           set({ isDialogOpen: false, dialogType: null });
         }
       }, 2000);
     }
   },
 
-  runDijkstra: async () => {
-    await get().runAlgorithm('dijkstra');
-  },
-
-  runAStar: async () => {
-    await get().runAlgorithm('aStar');
-  },
-
-  runBidirectional: async () => {
-    await get().runAlgorithm('bidirectional');
-  },
-
-  runJPS: async () => {
-    await get().runAlgorithm('jps');
-  },
+  runDijkstra: async () => get().runAlgorithm('dijkstra'),
+  runAStar: async () => get().runAlgorithm('aStar'),
+  runBidirectional: async () => get().runAlgorithm('bidirectional'),
+  runJPS: async () => get().runAlgorithm('jps'),
 
   runBenchmark: () => {
-    const grid = get().grid;
-    const hasObstacles = grid.some((row) => row.some((node) => node.isWall || node.isWeight));
-
+    const { startCoords, finishCoords, hasObstacles } = getGridMetrics(get().grid);
     if (!hasObstacles) {
       set({ isDialogOpen: true, dialogType: "noWalls" });
       return;
     }
 
-    let startCoords = { row: 0, col: 0 };
-    let finishCoords = { row: 0, col: 0 };
-
-    grid.forEach((row, rIdx) => {
-      row.forEach((node, cIdx) => {
-        if (node.isStart) startCoords = { row: rIdx, col: cIdx };
-        if (node.isFinish) finishCoords = { row: rIdx, col: cIdx };
-      });
-    });
-
     const t1Start = performance.now();
-    const dRes = dijkstra(grid, startCoords, finishCoords);
+    const dRes = dijkstra(get().grid, startCoords, finishCoords);
     const t1End = performance.now();
 
     const t2Start = performance.now();
-    const aRes = aStar(grid, startCoords, finishCoords);
+    const aRes = aStar(get().grid, startCoords, finishCoords);
     const t2End = performance.now();
 
     set({
@@ -354,59 +333,37 @@ export const usePathfindingStore = create<PathfindingState>((set, get) => ({
   },
 
   runDuel: async () => {
-    const grid = get().grid;
-    const hasObstacles = grid.some((row) => row.some((node) => node.isWall || node.isWeight));
-
+    const { startCoords, finishCoords, hasObstacles } = getGridMetrics(get().grid);
     if (!hasObstacles) {
       set({ isDialogOpen: true, dialogType: "noWalls" });
       return;
     }
 
-    let startCoords = { row: 0, col: 0 };
-    let finishCoords = { row: 0, col: 0 };
-
-    grid.forEach((row, rIdx) => {
-      row.forEach((node, cIdx) => {
-        if (node.isStart) startCoords = { row: rIdx, col: cIdx };
-        if (node.isFinish) finishCoords = { row: rIdx, col: cIdx };
-      });
-    });
-
     const t1Start = performance.now();
-    const dRes = dijkstra(grid, startCoords, finishCoords);
+    const dRes = dijkstra(get().grid, startCoords, finishCoords);
     const t1End = performance.now();
 
     const t2Start = performance.now();
-    const aRes = aStar(grid, startCoords, finishCoords);
+    const aRes = aStar(get().grid, startCoords, finishCoords);
     const t2End = performance.now();
 
-    const gridCopy = grid.map((row) => row.map((node) => ({ ...node })));
+    const gridCopy = get().grid.map((row) => row.map((node) => ({ ...node })));
 
     dRes.visitedNodesInOrder.forEach((node) => {
-      if (gridCopy[node.row] && gridCopy[node.row][node.col]) {
-        gridCopy[node.row][node.col].dijkstraVisited = true;
-      }
+      if (gridCopy[node.row]?.[node.col]) gridCopy[node.row][node.col].dijkstraVisited = true;
     });
-
     if (dRes.pathFound) {
       dRes.nodesInShortestPath.forEach((node) => {
-        if (gridCopy[node.row] && gridCopy[node.row][node.col]) {
-          gridCopy[node.row][node.col].dijkstraPath = true;
-        }
+        if (gridCopy[node.row]?.[node.col]) gridCopy[node.row][node.col].dijkstraPath = true;
       });
     }
 
     aRes.visitedNodesInOrder.forEach((node) => {
-      if (gridCopy[node.row] && gridCopy[node.row][node.col]) {
-        gridCopy[node.row][node.col].aStarVisited = true;
-      }
+      if (gridCopy[node.row]?.[node.col]) gridCopy[node.row][node.col].aStarVisited = true;
     });
-
     if (aRes.pathFound) {
       aRes.nodesInShortestPath.forEach((node) => {
-        if (gridCopy[node.row] && gridCopy[node.row][node.col]) {
-          gridCopy[node.row][node.col].aStarPath = true;
-        }
+        if (gridCopy[node.row]?.[node.col]) gridCopy[node.row][node.col].aStarPath = true;
       });
     }
 

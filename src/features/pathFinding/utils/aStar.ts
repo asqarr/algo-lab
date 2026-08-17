@@ -6,6 +6,12 @@ export interface AStarResult {
   pathFound: boolean;
 }
 
+const getKey = (r: number, c: number): string => `${r}-${c}`;
+
+const heuristic = (node: NodeData, finishNode: NodeData): number => {
+  return Math.abs(node.row - finishNode.row) + Math.abs(node.col - finishNode.col);
+};
+
 const getNeighbors = (grid: NodeData[][], row: number, col: number, rows: number, cols: number): NodeData[] => {
   const neighbors: NodeData[] = [];
   if (row > 0) neighbors.push(grid[row - 1][col]);
@@ -15,17 +21,15 @@ const getNeighbors = (grid: NodeData[][], row: number, col: number, rows: number
   return neighbors.filter((n) => !n.isWall);
 };
 
-const heuristic = (node: NodeData, finishNode: NodeData): number => {
-  return Math.abs(node.row - finishNode.row) + Math.abs(node.col - finishNode.col);
-};
-
 const getNodesInShortestPathOrder = (finishNode: NodeData): NodeData[] => {
   const nodesInShortestPathOrder: NodeData[] = [];
   let currentNode: NodeData | null = finishNode;
+  
   while (currentNode !== null) {
     nodesInShortestPathOrder.unshift(currentNode);
     currentNode = currentNode.previousNode;
   }
+  
   return nodesInShortestPathOrder;
 };
 
@@ -37,22 +41,23 @@ export const aStar = (
   const rows = grid.length;
   const cols = grid[0].length;
   
-  const gridCopy: NodeData[][] = grid.map((row) => row.map((node) => ({ ...node, distance: Infinity, previousNode: null, isVisited: false })) );
+  const gridCopy: NodeData[][] = grid.map((row) =>
+    row.map((node) => ({ ...node, distance: Infinity, previousNode: null, isVisited: false }))
+  );
+
   const startNode = gridCopy[startNodeCoords.row][startNodeCoords.col];
   const finishNode = gridCopy[finishNodeCoords.row][finishNodeCoords.col];
 
   startNode.distance = 0;
   const openSet: NodeData[] = [startNode];
   const visitedNodesInOrder: NodeData[] = [];
-  let pathFound = false;
+  
+  const gScores: Record<string, number> = {};
+  const fScores: Record<string, number> = {};
 
-  const gScores: { [key: string]: number } = {};
-  const fScores: { [key: string]: number } = {};
-
-  const getKey = (r: number, c: number) => `${r}-${c}`;
-
-  gScores[getKey(startNode.row, startNode.col)] = 0;
-  fScores[getKey(startNode.row, startNode.col)] = heuristic(startNode, finishNode);
+  const startKey = getKey(startNode.row, startNode.col);
+  gScores[startKey] = 0;
+  fScores[startKey] = heuristic(startNode, finishNode);
 
   while (openSet.length > 0) {
     openSet.sort((a, b) => {
@@ -67,22 +72,24 @@ export const aStar = (
     const currentNode = openSet.shift()!;
 
     if (currentNode.isWall) continue;
-    if (gScores[getKey(currentNode.row, currentNode.col)] === Infinity) break;
+    
+    const currentKey = getKey(currentNode.row, currentNode.col);
+    if (gScores[currentKey] === Infinity) break;
 
     currentNode.isVisited = true;
     visitedNodesInOrder.push(currentNode);
 
     if (currentNode.row === finishNode.row && currentNode.col === finishNode.col) {
-      pathFound = true;
       break;
     }
 
     const neighbors = getNeighbors(gridCopy, currentNode.row, currentNode.col, rows, cols);
+    
     for (const neighbor of neighbors) {
       const target = gridCopy[neighbor.row][neighbor.col];
-      const tentativeGScore = gScores[getKey(currentNode.row, currentNode.col)] + target.weight;
-
+      const tentativeGScore = (gScores[currentKey] ?? Infinity) + target.weight;
       const neighborKey = getKey(target.row, target.col);
+
       if (tentativeGScore < (gScores[neighborKey] ?? Infinity)) {
         target.previousNode = currentNode;
         gScores[neighborKey] = tentativeGScore;
@@ -95,10 +102,8 @@ export const aStar = (
     }
   }
 
-  let nodesInShortestPath: NodeData[] = [];
-  if (pathFound) {
-    nodesInShortestPath = getNodesInShortestPathOrder(gridCopy[finishNode.row][finishNode.col]);
-  }
+  const pathFound = finishNode.previousNode !== null || (startNode.row === finishNode.row && startNode.col === finishNode.col);
+  const nodesInShortestPath = pathFound ? getNodesInShortestPathOrder(finishNode) : [];
 
   return {
     visitedNodesInOrder,

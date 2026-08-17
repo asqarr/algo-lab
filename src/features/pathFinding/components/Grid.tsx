@@ -13,7 +13,9 @@ export const Grid: React.FC = () => {
 
   const handleMouseDown = useCallback((row: number, col: number) => {
     isMouseDownRef.current = true;
-    const node = grid[row]?.[col];
+    const currentGrid = usePathfindingStore.getState().grid;
+    const node = currentGrid[row]?.[col];
+    
     if (!node || node.isStart || node.isFinish) return;
 
     if (toolMode === "wall") {
@@ -23,11 +25,13 @@ export const Grid: React.FC = () => {
       targetStateRef.current = !node.isWeight;
       toggleWeight(row, col);
     }
-  }, [grid, toolMode, toggleWall, toggleWeight]);
+  }, [toolMode, toggleWall, toggleWeight]);
 
   const handleMouseEnter = useCallback((row: number, col: number) => {
     if (!isMouseDownRef.current) return;
-    const node = grid[row]?.[col];
+    const currentGrid = usePathfindingStore.getState().grid;
+    const node = currentGrid[row]?.[col];
+    
     if (!node || node.isStart || node.isFinish) return;
 
     if (toolMode === "wall") {
@@ -39,7 +43,7 @@ export const Grid: React.FC = () => {
         toggleWeight(row, col);
       }
     }
-  }, [grid, toolMode, toggleWall, toggleWeight]);
+  }, [toolMode, toggleWall, toggleWeight]);
 
   const handleMouseUp = useCallback(() => {
     isMouseDownRef.current = false;
