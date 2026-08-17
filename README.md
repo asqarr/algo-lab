@@ -34,9 +34,6 @@ Ensure you have the following installed on your local development environment:
 
 ### Installation & Setup
 
-### Installation & Setup
-
 1. Clone the repository:
    ```bash
    git clone [https://github.com/asqarr/algo-lab.git](https://github.com/asqarr/algo-lab.git)
-   ```
