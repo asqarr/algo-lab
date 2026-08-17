@@ -6,6 +6,8 @@ export interface JPSResult {
   pathFound: boolean;
 }
 
+const getKey = (r: number, c: number): string => `${r}-${c}`;
+
 const heuristic = (nodeA: { row: number; col: number }, nodeB: { row: number; col: number }): number => {
   return Math.abs(nodeA.row - nodeB.row) + Math.abs(nodeA.col - nodeB.col);
 };
@@ -25,33 +27,64 @@ export const jumpPointSearch = (
   const startNode = gridCopy[startNodeCoords.row][startNodeCoords.col];
   const finishNode = gridCopy[finishNodeCoords.row][finishNodeCoords.col];
 
-  const getKey = (r: number, c: number) => `${r}-${c}`;
-
-  const gScores: { [key: string]: number } = { [getKey(startNode.row, startNode.col)]: 0 };
-  const fScores: { [key: string]: number } = { [getKey(startNode.row, startNode.col)]: heuristic(startNode, finishNode) };
+  const gScores: Record<string, number> = { [getKey(startNode.row, startNode.col)]: 0 };
+  const fScores: Record<string, number> = { [getKey(startNode.row, startNode.col)]: heuristic(startNode, finishNode) };
 
   const openSet: NodeData[] = [startNode];
   const visitedNodesInOrder: NodeData[] = [];
   const visitedSet = new Set<string>();
 
-  const isWalkable = (r: number, c: number) => {
+  const isWalkable = (r: number, c: number): boolean => {
     return r >= 0 && r < rows && c >= 0 && c < cols && !gridCopy[r][c].isWall;
   };
 
-  const identifySuccessors = (node: NodeData): NodeData[] => {
-    const successors: NodeData[] = [];
-    const neighbors = getPrunedNeighbors(node);
+  const jump = (r: number, c: number, dx: number, dy: number): { row: number; col: number } | null => {
+    const nextR = r + dx;
+    const nextC = c + dy;
 
-    for (const nb of neighbors) {
-      const jumpPoint = jump(node.row, node.col, nb.row - node.row, nb.col - node.col);
-      if (jumpPoint) {
-        successors.push(gridCopy[jumpPoint.row][jumpPoint.col]);
+    if (!isWalkable(nextR, nextC)) return null;
+
+    const nextNode = gridCopy[nextR][nextC];
+    visitedNodesInOrder.push(nextNode);
+    const nextKey = getKey(nextR, nextC);
+    if (!visitedSet.has(nextKey)) {
+      visitedSet.add(nextKey);
+    }
+
+    if (nextR === finishNode.row && nextC === finishNode.col) {
+      return { row: nextR, col: nextC };
+    }
+
+    if (dx !== 0 && dy !== 0) {
+      if ((isWalkable(nextR - dx, nextC + dy) && !isWalkable(nextR - dx, nextC)) ||
+          (isWalkable(nextR + dx, nextC - dy) && !isWalkable(nextR, nextC - dy))) {
+        return { row: nextR, col: nextC };
+      }
+      if (jump(nextR, nextC, dx, 0) || jump(nextR, nextC, 0, dy)) {
+        return { row: nextR, col: nextC };
+      }
+    } else {
+      if (dx !== 0) {
+        if ((isWalkable(nextR + dx, nextC + 1) && !isWalkable(nextR, nextC + 1)) ||
+            (isWalkable(nextR + dx, nextC - 1) && !isWalkable(nextR, nextC - 1))) {
+          return { row: nextR, col: nextC };
+        }
+      } else {
+        if ((isWalkable(nextR + 1, nextC + dy) && !isWalkable(nextR + 1, nextC)) ||
+            (isWalkable(nextR - 1, nextC + dy) && !isWalkable(nextR - 1, nextC))) {
+          return { row: nextR, col: nextC };
+        }
       }
     }
-    return successors;
+
+    if (isWalkable(nextR + dx, nextC + dy)) {
+      return jump(nextR, nextC, dx, dy);
+    }
+
+    return null;
   };
 
-  const getPrunedNeighbors = (node: NodeData) => {
+  const getPrunedNeighbors = (node: NodeData): { row: number; col: number }[] => {
     const neighbors: { row: number; col: number }[] = [];
     const { row, col } = node;
     const parent = node.previousNode;
@@ -90,49 +123,17 @@ export const jumpPointSearch = (
     return neighbors;
   };
 
-  const jump = (r: number, c: number, dx: number, dy: number): { row: number; col: number } | null => {
-    const nextR = r + dx;
-    const nextC = c + dy;
+  const identifySuccessors = (node: NodeData): NodeData[] => {
+    const successors: NodeData[] = [];
+    const neighbors = getPrunedNeighbors(node);
 
-    if (!isWalkable(nextR, nextC)) return null;
-
-    const nextNode = gridCopy[nextR][nextC];
-    visitedNodesInOrder.push(nextNode);
-    if (!visitedSet.has(getKey(nextR, nextC))) {
-      visitedSet.add(getKey(nextR, nextC));
-    }
-
-    if (nextR === finishNode.row && nextC === finishNode.col) {
-      return { row: nextR, col: nextC };
-    }
-
-    if (dx !== 0 && dy !== 0) {
-      if ((isWalkable(nextR - dx, nextC + dy) && !isWalkable(nextR - dx, nextC)) ||
-          (isWalkable(nextR + dx, nextC - dy) && !isWalkable(nextR, nextC - dy))) {
-        return { row: nextR, col: nextC };
-      }
-      if (jump(nextR, nextC, dx, 0) || jump(nextR, nextC, 0, dy)) {
-        return { row: nextR, col: nextC };
-      }
-    } else {
-      if (dx !== 0) {
-        if ((isWalkable(nextR + dx, nextC + 1) && !isWalkable(nextR, nextC + 1)) ||
-            (isWalkable(nextR + dx, nextC - 1) && !isWalkable(nextR, nextC - 1))) {
-          return { row: nextR, col: nextC };
-        }
-      } else {
-        if ((isWalkable(nextR + 1, nextC + dy) && !isWalkable(nextR + 1, nextC)) ||
-            (isWalkable(nextR - 1, nextC + dy) && !isWalkable(nextR - 1, nextC))) {
-          return { row: nextR, col: nextC };
-        }
+    for (const nb of neighbors) {
+      const jumpPoint = jump(node.row, node.col, nb.row - node.row, nb.col - node.col);
+      if (jumpPoint) {
+        successors.push(gridCopy[jumpPoint.row][jumpPoint.col]);
       }
     }
-
-    if (isWalkable(nextR + dx, nextC + dy)) {
-      return jump(nextR, nextC, dx, dy);
-    }
-
-    return null;
+    return successors;
   };
 
   let pathFound = false;
@@ -155,7 +156,7 @@ export const jumpPointSearch = (
     const successors = identifySuccessors(currentNode);
     for (const s of successors) {
       const sKey = getKey(s.row, s.col);
-      const tentativeG = gScores[getKey(currentNode.row, currentNode.col)] + s.weight * heuristic(currentNode, s);
+      const tentativeG = (gScores[getKey(currentNode.row, currentNode.col)] ?? Infinity) + s.weight * heuristic(currentNode, s);
 
       if (tentativeG < (gScores[sKey] ?? Infinity)) {
         s.previousNode = currentNode;

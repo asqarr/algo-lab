@@ -53,7 +53,7 @@ export const SaveButton: React.FC = () => {
     <div className="relative inline-block">
       <button
         onClick={onSaveClick}
-        className="group flex items-center gap-2 px-5 py-2.5 bg-liner-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white rounded-xl text-sm font-semibold transition-all duration-300 cursor-pointer shadow-lg shadow-indigo-600/25 border border-indigo-400/20 active:scale-95"
+        className="group flex items-center gap-2 px-5 py-2.5 from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white rounded-xl text-sm font-semibold transition-all duration-300 cursor-pointer shadow-lg shadow-indigo-600/25 border border-indigo-400/20 active:scale-95"
       >
         <Bookmark className="w-4 h-4 text-cyan-400 animate-pulse transition-transform duration-300 group-hover:scale-110" />
         <span className="hidden sm:inline">Save Page</span>
@@ -61,7 +61,6 @@ export const SaveButton: React.FC = () => {
 
       {toast && (
         <div className="absolute top-15 right-0 z-50 flex items-center flex-row-reverse gap-2.5 px-4 py-2.5 bg-slate-900/95 border border-slate-700/80 rounded-2xl shadow-2xl backdrop-blur-2xl animate-in fade-in slide-in-from-top-2 duration-300 whitespace-nowrap">
-          {" "}
           {toast.type === "success" ? (
             <CheckCircle2 className="w-4 h-4 text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.6)]" />
           ) : (
@@ -89,7 +88,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onSave, onOpenDocs }) => {
         <div className="relative">
           <div className="absolute inset-0 bg-blue-500/30 blur-xl rounded-full group-hover:bg-cyan-400/40 transition-all duration-300"></div>
 
-          <div className="relative w-11 h-11 rounded-2xl bg-liner-to-tr from-blue-600 via-indigo-600 to-cyan-400 flex items-center justify-center shadow-lg shadow-blue-500/30 border border-white/10 group-hover:scale-105 transition-transform duration-300">
+          <div className="relative w-11 h-11 rounded-2xl bg-linear-to-tr from-blue-600 via-indigo-600 to-cyan-400 flex items-center justify-center shadow-lg shadow-blue-500/30 border border-white/10 group-hover:scale-105 transition-transform duration-300">
             <Sparkles className="w-5 h-5 text-white animate-pulse" />
           </div>
         </div>
@@ -111,7 +110,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onSave, onOpenDocs }) => {
             onClick={() => setToolMode("wall")}
             className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-300 cursor-pointer ${
               toolMode === "wall"
-                ? "bg-liner-to-r from-blue-600 via-indigo-600 to-cyan-600 text-white shadow-lg shadow-cyan-500/20 scale-[1.02]"
+                ? " from-blue-600 via-indigo-600 to-cyan-600 text-white shadow-lg shadow-cyan-500/20 scale-[1.02]"
                 : "text-slate-400 hover:text-white hover:bg-slate-900/60"
             }`}
           >
@@ -120,7 +119,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onSave, onOpenDocs }) => {
                 toolMode === "wall" ? "scale-110 text-cyan-300" : ""
               }`}
             />
-
             <span>Wall</span>
           </button>
 
@@ -128,7 +126,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onSave, onOpenDocs }) => {
             onClick={() => setToolMode("weight")}
             className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-300 cursor-pointer ${
               toolMode === "weight"
-                ? "bg-liner-to-r from-purple-600 via-fuchsia-600 to-pink-600 text-white shadow-lg shadow-fuchsia-500/25 scale-[1.02]"
+                ? " from-purple-600 via-fuchsia-600 to-pink-600 text-white shadow-lg shadow-fuchsia-500/25 scale-[1.02]"
                 : "text-slate-400 hover:text-white hover:bg-slate-900/60"
             }`}
           >
@@ -137,7 +135,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onSave, onOpenDocs }) => {
                 toolMode === "weight" ? "scale-110 text-fuchsia-300" : ""
               }`}
             />
-
             <span>Weight (5x)</span>
           </button>
         </div>
@@ -146,7 +143,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onSave, onOpenDocs }) => {
 
         <button
           onClick={onOpenDocs}
-          className="flex items-center gap-2 px-5 py-2.5 bg-liner-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white rounded-xl text-sm font-semibold transition-all duration-300 cursor-pointer shadow-lg shadow-indigo-600/25 border border-indigo-400/20"
+          className="flex items-center gap-2 px-5 py-2.5 from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white rounded-xl text-sm font-semibold transition-all duration-300 cursor-pointer shadow-lg shadow-indigo-600/25 border border-indigo-400/20"
         >
           <BookOpen className="w-4 h-4 text-amber-300 animate-pulse transition-transform duration-300 group-hover:scale-110" />
           <span>Algorithm Docs</span>

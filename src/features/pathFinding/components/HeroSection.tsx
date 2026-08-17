@@ -30,7 +30,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ isRunning, onRun }) =>
         <button
           disabled={isRunning}
           onClick={hasRun ? resetGrid : onRun}
-        className="group flex items-center gap-2 px-5 py-2.5 bg-liner-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white rounded-xl text-sm font-semibold transition-all duration-300 cursor-pointer shadow-lg shadow-indigo-600/25 border border-indigo-400/20 active:scale-95"
+          className="group flex items-center gap-2 px-5 py-2.5 bg-linear-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white rounded-xl text-sm font-semibold transition-all duration-300 cursor-pointer shadow-lg shadow-indigo-600/25 border border-indigo-400/20 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isRunning ? (
             <>
@@ -53,7 +53,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ isRunning, onRun }) =>
         <button
           disabled={isRunning}
           onClick={runDuel}
-        className="group flex items-center gap-2 px-5 py-2.5 bg-liner-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white rounded-xl text-sm font-semibold transition-all duration-300 cursor-pointer shadow-lg shadow-indigo-600/25 border border-indigo-400/20 active:scale-95"
+          className="group flex items-center gap-2 px-5 py-2.5 bg-linear-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white rounded-xl text-sm font-semibold transition-all duration-300 cursor-pointer shadow-lg shadow-indigo-600/25 border border-indigo-400/20 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Swords className="w-4 h-4 text-indigo-200 transition-transform duration-300 group-hover:rotate-12" />
           <span>Run Duel Mode</span>

@@ -18,10 +18,12 @@ const getNeighbors = (grid: NodeData[][], row: number, col: number, rows: number
 const getNodesInShortestPathOrder = (finishNode: NodeData): NodeData[] => {
   const nodesInShortestPathOrder: NodeData[] = [];
   let currentNode: NodeData | null = finishNode;
+  
   while (currentNode !== null) {
     nodesInShortestPathOrder.unshift(currentNode);
     currentNode = currentNode.previousNode;
   }
+  
   return nodesInShortestPathOrder;
 };
 
@@ -61,6 +63,7 @@ export const dijkstra = (
     for (const neighbor of neighbors) {
       const target = gridCopy[neighbor.row][neighbor.col];
       const newDistance = closestNode.distance + target.weight;
+      
       if (newDistance < target.distance) {
         target.distance = newDistance;
         target.previousNode = closestNode;
@@ -68,10 +71,7 @@ export const dijkstra = (
     }
   }
 
-  let nodesInShortestPath: NodeData[] = [];
-  if (pathFound) {
-    nodesInShortestPath = getNodesInShortestPathOrder(gridCopy[finishNode.row][finishNode.col]);
-  }
+  const nodesInShortestPath = pathFound ? getNodesInShortestPathOrder(finishNode) : [];
 
   return {
     visitedNodesInOrder,
