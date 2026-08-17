@@ -10,6 +10,14 @@ export const Grid: React.FC = () => {
 
   const isMouseDownRef = useRef(false);
   const targetStateRef = useRef<boolean | null>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      const container = scrollContainerRef.current;
+      container.scrollLeft = 0; 
+    }
+  }, []);
 
   const handleMouseDown = useCallback((row: number, col: number) => {
     isMouseDownRef.current = true;
@@ -64,23 +72,30 @@ export const Grid: React.FC = () => {
 
   return (
     <div
-      className="p-0.5 bg-[#070913]/80 rounded-2xl shadow-[0_0_30px_rgba(0,0,0,0.8)] backdrop-blur-md border border-slate-800/80 flex flex-col items-center justify-center select-none"
+      className="p-2 sm:p-4 bg-[#070913]/80 rounded-2xl shadow-[0_0_30px_rgba(0,0,0,0.8)] backdrop-blur-md border border-slate-800/80 flex flex-col items-center justify-center select-none w-full max-w-full"
       onMouseUp={handleMouseUp}
     >
-      <div className="flex flex-col rounded-xl overflow-hidden border border-slate-800/50 bg-[#070913]">
-        {grid.map((row, rowIdx) => (
-          <div key={rowIdx} className="flex">
-            {row.map((node, nodeIdx) => (
-              <Node
-                key={`${rowIdx}-${nodeIdx}`}
-                node={node}
-                onMouseDown={handleMouseDown}
-                onMouseEnter={handleMouseEnter}
-                onMouseUp={handleMouseUp}
-              />
+      <div 
+        ref={scrollContainerRef}
+        className="w-full overflow-x-auto pb-2 flex justify-start scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent"
+      >
+        <div className="inline-block min-w-max">
+          <div className="flex flex-col rounded-xl overflow-hidden border border-slate-800/50 bg-[#070913]">
+            {grid.map((row, rowIdx) => (
+              <div key={rowIdx} className="flex">
+                {row.map((node, nodeIdx) => (
+                  <Node
+                    key={`${rowIdx}-${nodeIdx}`}
+                    node={node}
+                    onMouseDown={handleMouseDown}
+                    onMouseEnter={handleMouseEnter}
+                    onMouseUp={handleMouseUp}
+                  />
+                ))}
+              </div>
             ))}
           </div>
-        ))}
+        </div>
       </div>
     </div>
   );

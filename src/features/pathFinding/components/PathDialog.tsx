@@ -29,9 +29,9 @@ const DuelStatRow: React.FC<DuelStatRowProps> = ({
   value,
   textColor,
 }) => (
-  <div className="flex items-center justify-between text-xs sm:text-sm">
+  <div className="flex items-center justify-between text-[11px] sm:text-sm">
     <span className="text-slate-400 flex items-center gap-1.5">
-      <Icon className={`w-4 h-4 ${iconColor}`} /> {label}:
+      <Icon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${iconColor}`} /> {label}:
     </span>
     <span className={`font-bold ${textColor}`}>{value}</span>
   </div>
@@ -96,7 +96,7 @@ export const PathDialog: React.FC = () => {
   return (
     <AnimatePresence mode="wait">
       {isDialogOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -118,18 +118,18 @@ export const PathDialog: React.FC = () => {
               exit={{ scale: 0.96, opacity: 0, y: 10 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
               style={{ willChange: "transform, opacity" }}
-              className="relative w-full max-w-2xl bg-slate-950 border border-teal-500/40 rounded-3xl shadow-2xl p-6 sm:p-8 text-white overflow-hidden z-10"
+              className="relative w-full max-w-2xl bg-slate-950 border border-teal-500/40 rounded-3xl shadow-2xl p-5 sm:p-8 text-white overflow-hidden z-10 my-auto"
             >
-              <div className="flex items-center justify-between pb-6 border-b border-slate-800">
-                <div className="flex items-center gap-3">
-                  <div className="p-3 bg-teal-600/25 border border-teal-500/50 rounded-2xl text-teal-300">
-                    <Trophy className="w-6 h-6" />
+              <div className="flex items-center justify-between pb-4 sm:pb-6 border-b border-slate-800">
+                <div className="flex items-center gap-2.5 sm:gap-3">
+                  <div className="p-2 sm:p-3 bg-teal-600/25 border border-teal-500/50 rounded-2xl text-teal-300">
+                    <Trophy className="w-5 h-5 sm:w-6 sm:h-6" />
                   </div>
                   <div>
-                    <h3 className="text-xl sm:text-2xl font-black tracking-tight text-transparent bg-clip-text bg-linear-to-r from-blue-400 via-teal-300 to-emerald-400">
+                    <h3 className="text-base sm:text-2xl font-black tracking-tight text-transparent bg-clip-text bg-linear-to-r from-blue-400 via-teal-300 to-emerald-400">
                       Algorithm Duel Analysis
                     </h3>
-                    <p className="text-xs text-slate-400 font-medium">
+                    <p className="text-[11px] sm:text-xs text-slate-400 font-medium">
                       Specialized performance comparison between Dijkstra (Blue)
                       and A* Search (Emerald)
                     </p>
@@ -137,19 +137,19 @@ export const PathDialog: React.FC = () => {
                 </div>
                 <button
                   onClick={() => setIsDialogOpen(false, null)}
-                  className="p-2 text-slate-400 hover:text-white bg-slate-800/50 hover:bg-slate-800 rounded-xl transition-colors cursor-pointer"
+                  className="p-1.5 sm:p-2 text-slate-400 hover:text-white bg-slate-800/50 hover:bg-slate-800 rounded-xl transition-colors cursor-pointer"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
               </div>
 
               {benchmarkResults.dijkstra && benchmarkResults.aStar && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 my-6">
-                  <div className="bg-blue-950/30 border border-blue-500/30 rounded-2xl p-4 sm:p-5 relative">
-                    <div className="absolute top-3 right-3 text-blue-400 font-bold text-xs px-2 py-0.5 bg-blue-500/20 rounded-md">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 my-4 sm:my-6">
+                  <div className="bg-blue-950/30 border border-blue-500/30 rounded-2xl p-3.5 sm:p-5 relative">
+                    <div className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 text-blue-400 font-bold text-[10px] sm:text-xs px-2 py-0.5 bg-blue-500/20 rounded-md">
                       Dijkstra
                     </div>
-                    <div className="space-y-3 mt-4">
+                    <div className="space-y-2.5 sm:space-y-3 mt-3 sm:mt-4">
                       <DuelStatRow
                         icon={Clock}
                         iconColor="text-blue-400"
@@ -174,11 +174,11 @@ export const PathDialog: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="bg-emerald-950/30 border border-emerald-500/30 rounded-2xl p-4 sm:p-5 relative">
-                    <div className="absolute top-3 right-3 text-emerald-400 font-bold text-xs px-2 py-0.5 bg-emerald-500/20 rounded-md">
+                  <div className="bg-emerald-950/30 border border-emerald-500/30 rounded-2xl p-3.5 sm:p-5 relative">
+                    <div className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 text-emerald-400 font-bold text-[10px] sm:text-xs px-2 py-0.5 bg-emerald-500/20 rounded-md">
                       A* Search
                     </div>
-                    <div className="space-y-3 mt-4">
+                    <div className="space-y-2.5 sm:space-y-3 mt-3 sm:mt-4">
                       <DuelStatRow
                         icon={Clock}
                         iconColor="text-emerald-400"
@@ -205,9 +205,9 @@ export const PathDialog: React.FC = () => {
                 </div>
               )}
 
-              <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 flex items-start gap-3 mb-6 text-left">
-                <Award className="w-5 h-5 text-teal-400 shrink-0 mt-0.5" />
-                <div className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-3.5 sm:p-4 flex items-start gap-2.5 sm:gap-3 mb-4 sm:mb-6 text-left">
+                <Award className="w-4 h-4 sm:w-5 sm:h-5 text-teal-400 shrink-0 mt-0.5" />
+                <div className="text-[11px] sm:text-sm text-slate-300 leading-relaxed">
                   <span className="font-bold text-white">
                     Scientific Conclusion:
                   </span>{" "}
@@ -222,7 +222,7 @@ export const PathDialog: React.FC = () => {
               <div className="flex justify-end">
                 <button
                   onClick={() => setIsDialogOpen(false, null)}
-                  className="px-6 py-3 bg-linear-to-r from-blue-600 via-teal-600 to-emerald-600 hover:opacity-95 text-white font-bold text-sm rounded-xl shadow-lg transition-all cursor-pointer"
+                  className="w-full sm:w-auto px-5 sm:px-6 py-2.5 sm:py-3 bg-linear-to-r from-blue-600 via-teal-600 to-emerald-600 hover:opacity-95 text-white font-bold text-xs sm:text-sm rounded-xl shadow-lg transition-all cursor-pointer"
                 >
                   Confirm and View Board
                 </button>
@@ -235,17 +235,17 @@ export const PathDialog: React.FC = () => {
               exit={{ scale: 0.96, opacity: 0, y: 10 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
               style={{ willChange: "transform, opacity" }}
-              className={`relative w-full max-w-md p-7 overflow-hidden text-center bg-slate-950 border ${
+              className={`relative w-full max-w-md p-5 sm:p-7 overflow-hidden text-center bg-slate-950 border ${
                 isSuccess
                   ? "border-emerald-500/30"
                   : isAlreadyRun
                     ? "border-teal-500/30"
                     : "border-rose-500/30"
-              } rounded-3xl shadow-2xl z-10`}
+              } rounded-3xl shadow-2xl z-10 my-auto`}
             >
-              <div className="relative mx-auto mb-5 w-16 h-16 flex items-center justify-center">
+              <div className="relative mx-auto mb-4 sm:mb-5 w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center">
                 <div
-                  className={`relative flex items-center justify-center w-16 h-16 rounded-2xl border ${
+                  className={`relative flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-2xl border ${
                     isSuccess
                       ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
                       : isAlreadyRun
@@ -254,27 +254,27 @@ export const PathDialog: React.FC = () => {
                   }`}
                 >
                   {isSuccess ? (
-                    <CheckCircle2 className="w-9 h-9" />
+                    <CheckCircle2 className="w-7 h-7 sm:w-9 sm:h-9" />
                   ) : isAlreadyRun ? (
-                    <RefreshCw className="w-8 h-8 animate-spin" />
+                    <RefreshCw className="w-6 h-6 sm:w-8 sm:h-8 animate-spin" />
                   ) : (
-                    <AlertCircle className="w-8 h-8" />
+                    <AlertCircle className="w-6 h-6 sm:w-8 sm:h-8" />
                   )}
                 </div>
               </div>
 
-              <h3 className="text-xl font-bold text-white mb-2 tracking-wide">
+              <h3 className="text-lg sm:text-xl font-bold text-white mb-1.5 sm:mb-2 tracking-wide">
                 {content.title}
               </h3>
-              <p className="text-slate-400 text-sm mb-4 leading-relaxed px-2">
+              <p className="text-slate-400 text-xs sm:text-sm mb-3 sm:mb-4 leading-relaxed px-2">
                 {content.message}
               </p>
 
               {!isSuccess && (
-                <div className="flex gap-3 mt-6">
+                <div className="flex gap-3 mt-4 sm:mt-6">
                   <button
                     onClick={handleAction}
-                    className={`w-full py-3.5 px-6 font-semibold text-white transition-all duration-200 rounded-2xl shadow-lg cursor-pointer ${
+                    className={`w-full py-3 sm:py-3.5 px-6 font-semibold text-xs sm:text-sm text-white transition-all duration-200 rounded-2xl shadow-lg cursor-pointer ${
                       isAlreadyRun
                         ? "bg-linear-to-r from-teal-600 to-blue-600 hover:from-teal-500 hover:to-blue-500"
                         : "bg-linear-to-r from-rose-600 to-teal-600 hover:from-rose-500 hover:to-teal-500"

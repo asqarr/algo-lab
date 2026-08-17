@@ -32,6 +32,9 @@ export const Node: React.FC<NodeProps> = memo(
       if (isWall) return "bg-slate-700 rounded-sm scale-95";
       if (isWeight) return "bg-purple-600/80 rounded-sm";
 
+      // اولویت بالا برای خط زرد مسیر نهایی در حالت تک‌الگوریتم
+      if (isShortestPath) return "bg-amber-400 rounded-sm z-10 shadow-[0_0_8px_rgba(251,191,36,0.8)]";
+
       if (dijkstraPath && aStarPath) return "bg-teal-300 rounded-sm z-10 shadow-[0_0_12px_rgba(45,212,191,0.8)]";
       if (dijkstraPath) return "bg-blue-400 rounded-sm z-10";
       if (aStarPath) return "bg-emerald-400 rounded-sm z-10";
@@ -40,7 +43,6 @@ export const Node: React.FC<NodeProps> = memo(
       if (dijkstraVisited) return "bg-blue-600/70 rounded-sm";
       if (aStarVisited) return "bg-emerald-600/70 rounded-sm";
 
-      if (isShortestPath) return "bg-amber-400 rounded-sm z-10";
       if (isVisited) return "bg-cyan-500/30 rounded-sm";
 
       return "bg-[#070913] hover:bg-slate-800/40";
